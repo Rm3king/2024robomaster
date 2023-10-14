@@ -1,0 +1,78 @@
+#ifdef SENTRY_GIMBAL_DOWN
+#ifndef COMPUTER_VISION_CONTROL_H
+#define COMPUTER_VISION_CONTROL_H
+
+#include "stdint.h"
+#include "Task.h"
+#include "Vector3.h"
+#include "CANSendTask.h"
+
+#define CAN_MINIPC_RX_ID 0x500  // 接收
+//#define CAN_MINIPC_DWN_QUATERNION_SYNC_ID 0x403 // 四元数 W X 同步
+//#define CAN_MINIPC_QUATERNION_WX_SYNC_ID 0x403 // 四元数 W X 同步
+//#define CAN_MINIPC_QUATERNION_YZ_SYNC_ID 0x404 // 四元数 Y Z 同步
+//#define CAN_MINIPC_ACCEL_XY_SYNC_ID 0x405 // 加速度 X Y 同步
+//#define CAN_MINIPC_ACCEL_Z_GYRO_X_SYNC_ID 0x406 // 加速度 Z 角速度 X 同步
+//#define CAN_MINIPC_GYRO_YZ_SYNC_ID 0x407 // 角速度 Y Z 同步
+
+class IMUDataSyncTask;
+
+typedef struct
+{
+  float shoot_freq;
+  Vector3f pos;
+
+} MINIPC_RX_data_t;
+
+
+class ComputerVisionControlTask : public Task_Base
+{
+public:
+  friend class Robot;
+  friend class RemoteControlTask;
+  ComputerVisionControlTask
+  (
+    Robot &robot0,
+    CANDevice &_can_device,
+    timeus_t interval_tick_us0 = 1e6f / 200.0f
+  );
+ MINIPC_RX_data_t getMiniPCControlData(){
+    return minipc_ctrl_data;
+  }
+
+  virtual void init(void);
+  virtual void update(timeus_t dT_us);
+  virtual void uninit(void);
+
+protected:
+  MINIPC_RX_data_t minipc_ctrl_data;
+  IMUDataSyncTask *imu_sync_data_task;
+  CAN_Rx_Data_Pack_t can_rx_data;
+};
+
+// 加速度计、陀螺仪、角速度计数据同步任务
+class IMUDataSyncTask : public Task_Base
+{
+public:
+  friend class Robot;
+
+  IMUDataSyncTask
+  (
+    Robot &robot0,
+    timeus_t interval_tick_us0 = 1e6f / 400.0f
+  );
+
+
+  virtual void init(void);
+  virtual void update(timeus_t dT_us);
+  virtual void uninit(void);
+
+protected:
+  uint8_t data_buf[26];
+
+
+
+};
+
+#endif
+#endif
