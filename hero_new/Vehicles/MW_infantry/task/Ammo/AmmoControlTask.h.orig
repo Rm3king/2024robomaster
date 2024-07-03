@@ -1,0 +1,67 @@
+#ifdef TEMPLATE
+
+#ifndef AMMO_CONTROL_TASK_H
+#define AMMO_CONTROL_TASK_H
+
+#include "Motor.h"
+#include "Motor_RM_Tasks.h"
+#include "Matrix3.h"
+
+typedef enum
+{
+  BOOSTER_OFF = 0,
+  BOOSTER_ON = 1,
+  TRIGGER_AUTO = 2
+} Ammo_Control_Mode;
+
+
+
+class AmmoRM_ControlTask : public Task_Base
+{
+public:
+  friend class Robot;
+  friend class RemoteControlTask;
+  // friend class MainControlTask;
+
+  AmmoRM_ControlTask(
+  Robot &robot0,
+  Motor_RM_Params_t *booster_r, PID_Params_t *booster_r_ang, PID_Params_t *booster_r_ang_vel,
+  Motor_RM_Params_t *booster_l, PID_Params_t *booster_l_ang, PID_Params_t *booster_l_ang_vel,
+  Motor_RM_Params_t *trigger, PID_Params_t *trigger_ang, PID_Params_t *trigger_ang_vel,
+  timeus_t interval_tick_us0 = 0
+));
+
+  virtual ~AmmoRM_ControlTask(void) {}
+
+  virtual void init(void);
+
+  virtual void update(timeus_t dT_us);
+
+  virtual void uninit(void);
+
+  Motor_RM_PIDControlTask* getBoosterLeftPIDControlTaskPointer(void)
+  {
+    return motor_booster_l_pid_task;
+  }
+  Motor_RM_PIDControlTask* getBoosterRightPIDControlTaskPointer(void)
+  {
+    return motor_booster_r_pid_task;
+  }
+  Motor_RM_PIDControlTask* getTriggerPIDControlTaskPointer(void)
+  {
+    return motor_trigger_pid_task;
+  }
+protected:
+
+  Motor_RM_PIDControlTask *motor_booster_l_pid_task, *motor_booster_r_pid_task,  *motor_trigger_pid_task;
+  Ammo_Control_Mode booster_mode;
+  float exp_spd;
+  float shoot_freq;
+
+};
+
+
+
+#endif
+
+#endif
